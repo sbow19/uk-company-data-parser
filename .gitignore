@@ -1,0 +1,41 @@
+# RAW DATASETS
+datasets/
+
+# Ignore Python bytecode files
+*.pyc
+__pycache__/
+
+# Ignore configuration files (if you don't want them in version control)
+config/config.py
+
+# Ignore environment directories (if you're using virtual environments)
+venv/
+env/
+.env
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore IDE specific files (e.g., VSCode, PyCharm)
+.vscode/
+.idea/
+
+# Ignore log files
+*.log
+
+# Ignore compiled C extensions
+*.so
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.lock
+
+# Ignore other files specific to your setup
+*.DS_Store
+*.class
+*.out
+
+# ignore all output files
+*.txt
+*.csv
