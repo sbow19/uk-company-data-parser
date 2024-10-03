@@ -1,7 +1,7 @@
 import pandas as pd
 from config import config
 from ch_api.utils.progress import time_progress
-from typing import Optional, Set, Tuple, List, Literal
+from typing import Optional, Set, Tuple, List
 from tqdm.asyncio import tqdm_asyncio
 from ch_api.utils.async_http import concurrent_http_request_pool
 from util.api_response_parse_schemas import (
@@ -27,7 +27,7 @@ class Scrape_Data:
         self.process_type = process_type     
         self.prev_successful_queries_list = set()                               # (Optional) Prev results compared to current name searches to avoid duped calls 
         # Property determines flow of requests
-        
+        print(process_type)
         # Set specific scraping parameters by virtue of process type
         if process_type in ["charge_data", "failed_charge_queries"]:
             self.df = pd.DataFrame(columns=config.UK_COMPANY_CHARGE_HEADER)
@@ -60,26 +60,26 @@ class Scrape_Data:
     
     
     # Fetch company information
-    async def scrape_data(self, company_details_list=set()):
+    async def scrape_data(self, company_details_list=set(), pbar_position=0):
         
         # Check which process is being done
         if self.process_type == "charge_data":
-            await self.__fetch_charge_data_wrapper(company_details_list)
+            await self.__process_charge_data_wrapper(company_details_list, pbar_position)
         elif self.process_type == "for_co_owner":
-            await self.__fetch_for_co_owner_data_wrapper(company_details_list)
+            await self.__process_for_co_owner_data_wrapper(company_details_list, pbar_position)
         elif self.process_type == "uk_co_owner":
-            await self.__fetch_uk_co_owner_data_wrapper(company_details_list)
+            await self.__process_uk_co_owner_data_wrapper(company_details_list, pbar_position)
         elif self.process_type == "missed_for_co_number":
-            await self.__fetch_missed_company_number_wrapper(company_details_list)
+            await self.__process_missed_company_number_wrapper(company_details_list, pbar_position)
         elif self.process_type in ["failed_charge_queries", "failed_uk_bo_queries"]:
-            await self.__fetch_failed_queries_wrapper(company_details_list)
+            await self.__process_failed_queries_wrapper(company_details_list, pbar_position)
         else:
-            raise ValueError("Invalid process type. Please choose from 'charge_data', 'for_co_owner', or 'uk_co_owner'.")"
+            raise ValueError("Invalid process type. Please choose from 'charge_data', 'for_co_owner', or 'uk_co_owner'.")
         
     
     # Process type wrappers
     @time_progress("Overseas Companies Beneficial Owners Scrape", "Company")
-    async def __fetch_for_co_owner_data_wrapper(self, company_details_list=set(), pbar: Optional[tqdm_asyncio]=None):
+    async def __process_for_co_owner_data_wrapper(self, company_details_list=set(), pbar: Optional[tqdm_asyncio]=None):
        
         for company_details in company_details_list:
                 
@@ -96,7 +96,7 @@ class Scrape_Data:
                         await self.__fetch_bo_data_wrapper(self.company_queue_post_name_fetch)
                         # Save company data to csv
 
-                        Scrape_Data.__save_to_csv(self.data_list, self.results_output_file)
+                        Scrape_Data.__save_to_csv(self.data_list, self.results_output_file, self.df)
                         
                         # Update companies finished list file
                         Scrape_Data.__write_finished_queries(self.successful_company_query, self.successful_query_output_file)
@@ -132,7 +132,7 @@ class Scrape_Data:
             await self.__fetch_bo_data_wrapper(self.company_queue_post_name_fetch)
             # Save company data to csv
 
-            Scrape_Data.__save_to_csv(self.data_list, self.results_output_file)
+            Scrape_Data.__save_to_csv(self.data_list, self.results_output_file, self.df)
                         
             # Update companies finished list file
             Scrape_Data.__write_finished_queries(self.successful_company_query, self.successful_query_output_file)
@@ -161,7 +161,7 @@ class Scrape_Data:
             pbar.refresh()
      
     @time_progress("Companies House UK Company PSC Scrape", "Company")
-    async def __fetch_uk_co_owner_data_wrapper(self, company_details_list=set(), pbar: Optional[tqdm_asyncio]=None):
+    async def __process_uk_co_owner_data_wrapper(self, company_details_list=set(), pbar: Optional[tqdm_asyncio]=None):
     
         blank_companies = set()                              
         
@@ -186,7 +186,7 @@ class Scrape_Data:
                     await self.__fetch_bo_data_wrapper(self.company_queue)    # Company number is second object in tuple
                     # Save company data to csv
 
-                    Scrape_Data.__save_to_csv(self.data_list, self.results_output_file)
+                    Scrape_Data.__save_to_csv(self.data_list, self.results_output_file, self.df)
                         
                     # Update companies finished list file
                     Scrape_Data.__write_finished_queries(self.successful_company_query, self.successful_query_output_file)
@@ -215,7 +215,7 @@ class Scrape_Data:
             await self.__fetch_bo_data_wrapper(self.company_queue)    # Company number is second object in tuple
             # Save company data to csv
 
-            Scrape_Data.__save_to_csv(self.data_list, self.results_output_file)
+            Scrape_Data.__save_to_csv(self.data_list, self.results_output_file, self.df)
                         
             # Update companies finished list file
             Scrape_Data.__write_finished_queries(self.successful_company_query, self.successful_query_output_file)
@@ -241,8 +241,8 @@ class Scrape_Data:
             pbar.refresh()
     
     @time_progress("Companies House Charge Scrape", "Company")
-    async def __fetch_charge_data_wrapper(self, company_details_list=set(), pbar: Optional[tqdm_asyncio]=None):
-    
+    async def __process_charge_data_wrapper(self, company_details_list=set(), pbar: Optional[tqdm_asyncio]=None):
+
         blank_companies = set()                              
         
         for company_details in company_details_list:
@@ -264,7 +264,9 @@ class Scrape_Data:
             
                 try:
                     await self.__fetch_charge_data_wrapper(self.company_queue) 
-                    Scrape_Data.__save_to_csv(self.data_list, self.results_output_file)
+                    
+                    
+                    Scrape_Data.__save_to_csv(self.data_list, self.results_output_file, self.df)
                         
                     # Update companies finished list file
                     Scrape_Data.__write_finished_queries(self.successful_company_query, self.successful_query_output_file)
@@ -278,6 +280,7 @@ class Scrape_Data:
                 except aiohttp.ClientError as e:
                     raise e                
                 except Exception as e:
+                    print("Something failed here")
                     print(e)
                 
                 finally:
@@ -294,7 +297,7 @@ class Scrape_Data:
             await self.__fetch_charge_data_wrapper(self.company_queue)    # Company number is second object in tuple
             # Save company data to csv
 
-            Scrape_Data.__save_to_csv(self.data_list, self.results_output_file)
+            Scrape_Data.__save_to_csv(self.data_list, self.results_output_file, self.df)
                     
             # Update companies finished list file
             Scrape_Data.__write_finished_queries(self.successful_company_query, self.successful_query_output_file)
@@ -320,7 +323,7 @@ class Scrape_Data:
             pbar.refresh()
     
     @time_progress("Missed Overseas Companies Beneficial Owners Scrape", "Company")
-    async def __fetch_missed_company_number_wrapper(self, company_numbers_list=set(), pbar: Optional[tqdm_asyncio]=None):   
+    async def __process_missed_company_number_wrapper(self, company_numbers_list=set(), pbar: Optional[tqdm_asyncio]=None):   
         
         for missed_number in company_numbers_list:
             
@@ -336,7 +339,7 @@ class Scrape_Data:
                     # Get
                     await self.__fetch_bo_data_wrapper(self.company_queue)
                     
-                    Scrape_Data.__save_to_csv(self.data_list, self.results_output_file)
+                    Scrape_Data.__save_to_csv(self.data_list, self.results_output_file, self.df)
                         
                     # Update companies finished list file
                     Scrape_Data.__write_finished_queries(self.successful_company_query, self.successful_query_output_file)
@@ -371,7 +374,7 @@ class Scrape_Data:
             await self.__fetch_bo_data_wrapper(self.company_queue)
             # Save company data to csv
 
-            Scrape_Data.__save_to_csv(self.data_list, self.results_output_file)
+            Scrape_Data.__save_to_csv(self.data_list, self.results_output_file, self.df)
                         
             # Update companies finished list file
             Scrape_Data.__write_finished_queries(self.successful_company_query, self.successful_query_output_file)
@@ -400,7 +403,7 @@ class Scrape_Data:
     
     # Failed list scrape methods
     @time_progress("Companies House UK Company PSC Scrape", "Company")
-    async def __fetch_failed_queries_wrapper(self, failed_company_list=set(), pbar: Optional[tqdm_asyncio]=None):
+    async def __process_failed_queries_wrapper(self, failed_company_list=set(), pbar: Optional[tqdm_asyncio]=None):
         
         
         for company_details in failed_company_list: 
@@ -436,7 +439,7 @@ class Scrape_Data:
                 if self.process_type == "failed_charge_queries":
                     await self.__fetch_charge_data_wrapper(self.company_queue_post_name_fetch)
                 elif self.process_type == "failed_uk_bo_queries":
-                    await self.__fetch_uk_co_owner_data_wrapper(self.company_queue_post_name_fetch)
+                    await self.__fetch_bo_data_wrapper(self.company_queue_post_name_fetch)
                 
                 self.__remove_company_details_from_unsuccessful_file(self.company_name_fetch_queue, "list")
                 # Empty post name fetch buffer  
@@ -471,11 +474,10 @@ class Scrape_Data:
             if self.process_type == "failed_charge_queries":
                 await self.__fetch_charge_data_wrapper(self.company_queue_post_name_fetch)
             elif self.process_type == "failed_uk_bo_queries":
-                await self.__fetch_uk_co_owner_data_wrapper(self.company_queue_post_name_fetch)
+                await self.__fetch_bo_data_wrapper(self.company_queue_post_name_fetch)
                 
-            
             # Finally remove companies in post name fetch queue
-            self.__remove_company_details_from_unsuccessful_file(self.company_queue_post_name_fetch, "list")
+            self.__remove_company_details_from_unsuccessful_file(self.company_name_fetch_queue, "list")
             
             # Empty post name fetch buffer  
             self.company_queue_post_name_fetch = set()
@@ -574,9 +576,10 @@ class Scrape_Data:
                         
             parsed_data = self.__parse_api_response(raw_data, company_details, "charge_details")
             
-            for company in parsed_data:
-                # Add company name and lis of parsed search results
-                self.company_queue_post_name_fetch.add((company[0], company[1], company_details[0]))  # Company name, company number, company anem searched                
+            self.data_list +=  parsed_data
+            
+            
+            self.successful_company_query.add((company_details[0], company_details[1]))  # Company name, company number, company anem searched                
                 
         
         except aiohttp.ClientConnectionError as e:
@@ -653,13 +656,12 @@ class Scrape_Data:
     
     # Utility Methods
     @classmethod
-    def __save_to_csv(cls, data_list, file_path):
+    def __save_to_csv(cls, data_list, file_path, template_df):
         
-        template_df = cls.df.copy()
         # Convert list of dicts to dataframe
         api_data_df = pd.DataFrame(data_list)
     
-        file_exists = os.path.isfile()
+        file_exists = os.path.isfile(file_path)
         
         # Push data to dataframe
         new_df = pd.concat([template_df, api_data_df], ignore_index=True)
@@ -692,7 +694,6 @@ class Scrape_Data:
             with open(file_path, "a", encoding="utf-8") as file:
                 for company in failed_company_fetch:
                     file.write(f"{company[0]}: {company[1]}\n")
-    
     
     def __company_no_in_finished_list(self, company_number) -> bool:
         

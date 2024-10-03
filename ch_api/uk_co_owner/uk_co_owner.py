@@ -6,7 +6,7 @@ from ch_api.utils.output_file import (
     does_failed_list_exist,
     does_finished_list_exist
 )
-from ch_api.uk_co_owner.utils.scrape_data import Scrape_UK_Company_Owners
+from util.scrape_data import Scrape_Data
 from ch_api.utils.repl_helper import prompt_user_to_continue
 from ch_api.utils.misc import split_into_chunks
 import aiohttp
@@ -34,8 +34,8 @@ async def scrape_unique(lock, company_list_chunk, pbar_position):
             
         try:
             # Initial Scrape data from companies house
-            Scrape_UK_Company_Owners.initialize_class(lock)
-            scraper = Scrape_UK_Company_Owners(api_keys[0])
+            Scrape_Data.initialize_class(lock)
+            scraper = Scrape_Data(api_keys[0], "uk_co_owner")
             await scraper.scrape_data(company_list_chunk, pbar_position)
             print("Successfully scraped company records")
         except aiohttp.ClientConnectionError as e:
@@ -78,9 +78,9 @@ async def scrape_failed(lock, company_list_chunk, pbar_position):
             
         try:
             # Initial Scrape data from companies house
-            Scrape_UK_Company_Owners.initialize_class(lock)
-            scraper = Scrape_UK_Company_Owners(api_keys[0])
-            await scraper.scrape_failed_data(company_list_chunk, pbar_position)
+            Scrape_Data.initialize_class(lock)
+            scraper = Scrape_Data(api_keys[0], "failed_uk_bo_queries")
+            await scraper.scrape_data(company_list_chunk, pbar_position)
             print("Successfully scraped company records")
         except aiohttp.ClientConnectionError as e:
             # Handle connection errors (e.g., DNS failures, refused connections)
