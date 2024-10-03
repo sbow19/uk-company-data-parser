@@ -6,7 +6,7 @@ from ch_api.utils.output_file import (
     does_failed_list_exist,
     does_finished_list_exist
 )
-from ch_api.charge_data.utils.scrape_data import Scrape_CH_Charges
+from util.scrape_data import Scrape_Data
 from ch_api.utils.repl_helper import prompt_user_to_continue
 from ch_api.utils.misc import split_into_chunks
 import aiohttp
@@ -34,8 +34,8 @@ async def scrape_unique(lock, company_list_chunk, pbar_position):
             
         try:
             # Initial Scrape data from companies house
-            Scrape_CH_Charges.initialize_class(lock)
-            scraper = Scrape_CH_Charges(api_keys[0])
+            Scrape_Data.initialize_class(lock)
+            scraper = Scrape_Data(api_keys[0], "charge_data")
             await scraper.scrape_data(company_list_chunk, pbar_position)
             print("Successfully scraped company records")
         except aiohttp.ClientConnectionError as e:
@@ -78,9 +78,9 @@ async def scrape_failed(lock, company_list_chunk, pbar_position):
             
         try:
             # Initial Scrape data from companies house
-            Scrape_CH_Charges.initialize_class(lock)
-            scraper = Scrape_CH_Charges(api_keys[0])
-            await scraper.scrape_failed_data(company_list_chunk, pbar_position)
+            Scrape_Data.initialize_class(lock)
+            scraper = Scrape_Data(api_keys[0], "failed_charge_queries")
+            await scraper.scrape_data(company_list_chunk, pbar_position)
             print("Successfully scraped company records")
         except aiohttp.ClientConnectionError as e:
             # Handle connection errors (e.g., DNS failures, refused connections)
@@ -144,7 +144,7 @@ async def unique_list_scrape():
     # Call the method for each chunk
     for chunk in chunks:
         
-        p = multiprocessing.Process(target=run_scrape, args=("failed", lock, chunk, pbar_position))
+        p = multiprocessing.Process(target=run_scrape, args=("unique", lock, chunk, pbar_position))
         processes.append(p)
         p.start()
         pbar_position += 1
