@@ -23,9 +23,7 @@ def validate_csv_files(filePathArray):
     parsedFiles = read_parsed_files()
 
     # Loop through each file in the filePathArray, and add file paths not already parsed
-    for filePath in filePathArray:
-        
-        
+    for filePath in filePathArray:    
 
         root = config.DATA_FILE_PATH
         fullPath = root / filePath
