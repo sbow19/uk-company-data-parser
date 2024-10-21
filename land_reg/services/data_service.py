@@ -15,8 +15,7 @@ def process_directory(process_type: str) -> None:
     # Convert to list of file names
     document_names = [file.name for file in documents]
     
-    # Filter out depending on process_type
-    
+    # Filter out files depending on process_type
     if process_type == "both":
         pass
     elif process_type == "dom":
@@ -27,7 +26,6 @@ def process_directory(process_type: str) -> None:
         # Filter out CCOD datasets
         document_names = [file for file in document_names if not "CCOD_" in file]
         
-
     #Get set of unparsed and valid csv files
     fileNameArray = validate_csv_files(document_names)
 

@@ -1,7 +1,7 @@
 import csv
 import os
 from database.db_connection import get_connection
-from database.db_methods import create_table, sanitize_column_names, sanitize_item
+from database.db_methods import sanitize_column_names, sanitize_item
 from config import config
 from datetime import datetime
 from ch_api.utils.repl_helper import prompt_user_to_continue
@@ -64,7 +64,6 @@ def parse_charge_owner_output(file_path):
     row_count = 20750
 
     try:
-        create_table('hmlr', "ch_charge_data", file_path)
 
         #GEt file date string 
         date_str = get_date()
@@ -151,9 +150,6 @@ def parse_uk_psc_output(file_path):
     row_count = 0
     
     try:
-        #Create table if it doesn't exist
-        create_table('hmlr', "uk_co_psc", file_path)
-
         #GEt file date string 
         date_str = get_date()
 
@@ -233,9 +229,6 @@ def parse_overseas_psc_output(file_path):
     row_count = 0
     
     try:
-
-        #Create table if it doesn't exist
-        create_table('hmlr', "overseas_co_psc", file_path)
 
         #GEt file date string 
         date_str = get_date()

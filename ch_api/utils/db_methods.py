@@ -121,7 +121,7 @@ def __save_company_list_to_unique_company_list(company_list, file_path, loc, upd
             print(e)
             raise Exception("Some error saving companies list... ")  
     
-     # If update true, then we are rewriting over old file. We create a new buffer file to write first so the old unique list isn't overwritten
+    # If update true, then we are rewriting over old file. We create a new buffer file to write first so the old unique list isn't overwritten
     elif update: 
         
         try:
