@@ -1,18 +1,12 @@
 #This script imports lock functionality
 
 import os
-import sys
 from typing import Literal, List
-from config import config
 
 LOCKFILE = "tmp/processes.lock"
 APILOCKFILE = "tmp/api_keys.lock"
 Processes = ["ingest_csv", "fetch_uk_co_bo", "fetch_for_co_bo", "fetch_charge_data", "collect_uk_unique_list", "collect_overseas_unique_list"]
-APIKEYS = [
-    config.CH_API_KEY, 
-    config.CH_API_KEY_2,
-    config.CH_API_KEY_3
-]
+
 
 def create_lock(process_type) -> bool:
     #Create a lock file to indicate the program is running.
@@ -126,7 +120,12 @@ def fetch_current_api_keys() -> List:
 def get_available_api_keys()-> List:
     current_api_keys = fetch_current_api_keys()
     
-    
+    APIKEYS = [
+    os.getenv("CH_API_KEY"),
+    os.getenv("CH_API_KEY_2"),
+    os.getenv("CH_API_KEY_3")
+    ]
+        
     available_api_keys = [key for key in APIKEYS if key not in current_api_keys]
     
     return available_api_keys

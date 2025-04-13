@@ -261,7 +261,6 @@ class Scrape_Data:
             
             # Once the length of the chunk reaches 1000, then we provide the company ids to the fetch data method
             if len(self.company_queue) == self.chunk_size:
-            
                 try:
                     await self.__fetch_charge_data_wrapper(self.company_queue) 
                     

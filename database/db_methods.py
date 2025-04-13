@@ -31,8 +31,10 @@ def sanitize_item(item):
 
     return sanitised_item
 
+# Create table in MYSQL instance. 
 def create_table(db_name, table_name, filePath):
 
+    # Establish db connection with credentials in .env file
     connection = get_connection()
 
     connection.cursor().execute(f"USE {db_name}")
@@ -41,7 +43,9 @@ def create_table(db_name, table_name, filePath):
     # Open and read the CSV file header
     with open(filePath, mode='r') as file:
         reader = csv.reader(file)
+        # Read the  first line of the csv file for header
         headers = next(reader)
+        # Remove non-alphanumeric characters and white spaces
         columns = sanitize_column_names(headers)
     
     # Dynamically create the CREATE TABLE SQL query based on CSV columns

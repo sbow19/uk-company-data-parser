@@ -1,6 +1,7 @@
 import os
 from config import config
 
+# Returns list of datasets already parsed, located at PARSED_FILE_PATH
 def read_parsed_files():
 
     parsedFiles = []
@@ -9,6 +10,7 @@ def read_parsed_files():
     #Import requirement.txt file lines
     with open(config.PARSED_FILE_PATH, 'r') as file:
         paths = file.readlines()
+        
         
 
     parsedFiles = [os.path.normpath(path.strip()) for path in paths]
@@ -23,13 +25,12 @@ def validate_csv_files(filePathArray):
     parsedFiles = read_parsed_files()
 
     # Loop through each file in the filePathArray, and add file paths not already parsed
+    # To filesToParse set
     for filePath in filePathArray:
-        
-        
 
         root = config.DATA_FILE_PATH
-        fullPath = root / filePath
-
+        fullPath = root + '/' + filePath
+        
         #Check valid file path
         if not filePath.endswith('.csv'):
             print(f'Invalid file path: {filePath}')

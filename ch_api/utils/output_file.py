@@ -21,7 +21,7 @@ def _create_failed_company_queries_list_file(failed_queries_file_path):
 # Output file creator functions
 
 def create_charge_data_output_files():
-    # Companies file path contains a list of all unique UK company numbers that appear in the HMLR
+    # Unique UK Companies file path contains a list of all unique UK company numbers that appear in the HMLR
     # UK company land ownership datasets. This list is used to query the UK Companies House API for
     # charge information.
     

@@ -1,16 +1,28 @@
-# This script creates a command-line wrapper around HMLR dataset ingestion
-# and UK Companies House API call
+# This script creates a command-line wrapper around HMLR dataset ingestion and CH Companies House API calls
+# In order to function, a .env must be added to the config directory containing all the credentials
+# for API access and local mysql instance access.
 
-import sys  # [System import]
+import sys
 from config import config
 from ch_api.service import start_ch_service
 from land_reg.service import start_hmlr_service
-from win10toast import ToastNotifier
 from lock.lock import remove_process
 import asyncio
+from dotenv import load_dotenv, dotenv_values
+import os
 
 
 async def main() -> None:  # Entry point to programme
+    '''
+        User has one of two services to choose via the command line: Companies House (--ch)
+        or HM Land Registry (--hmlr).
+        
+        --hmlr:  Triggers the ingestion of HMLR datasets into the local mysql instance.
+        --ch: triggers the scraping of the Companies House API,depending on other params
+    '''
+    
+    load_dotenv(override=True)
+    
 
     # Check if arguments were passed
     if len(sys.argv) > 1:
@@ -19,16 +31,11 @@ async def main() -> None:  # Entry point to programme
         print("Please enter an argument")
         raise Exception("Arguments required")
     
-    # Reject if both ==ch and --hmlr were called
+    # Reject if both --ch and --hmlr were called
     if "--hmlr" in sys.argv and "--ch" in sys.argv:
         print("Only one operation can be performed at a time")
         return
-    
-    # Prints out the most recent
-    if "--recent" in sys.argv:
-        with open(config.RECENT_LOGS_PATH, "r", encoding="utf-8") as logs:
-            for line in logs:
-                print(line, end="")
+
         
     # Triggers Companies House API Calls.
     # Users can provide one argument
@@ -59,14 +66,12 @@ async def main() -> None:  # Entry point to programme
 
 if __name__ == '__main__':
     
-    toast = ToastNotifier()
     try:
+        # Async running due to API concurrency
         asyncio.run(main())
-        toast.show_toast("CLI Scrape", "Operation Successful", duration=2)
         remove_process()
         sys.exit(0)
     except Exception as e:
-        toast.show_toast("CLI Scrape", "Operation Unsuccessful", duration=2)
         remove_process()
         sys.exit(1)
     

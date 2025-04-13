@@ -23,6 +23,7 @@ async def scrape_unique(lock, company_list_chunk, pbar_position):
     if len(api_keys) < 1:
         raise Exception("At least one api key is required")
     
+    # Generate lock on first api key in keys left
     create_api_key_lock("fetch_for_co_bo", api_keys[0])
     
     # Main scrape loop
@@ -121,6 +122,8 @@ async def unique_list_scrape():
     company_list["uk_companies"] = read_company_list_file("dom")
 
     # Check if there is a finished or unfinished company list
+    # If finished list, then we can narrow down the amount of
+    # API calls to only companies not appearing in finished list
     if does_finished_list_exist("charge"):
         if prompt_user_to_continue("Would you like to narrow down the unique company list with these additional lists"):
             try:
@@ -130,7 +133,7 @@ async def unique_list_scrape():
                 print(e)
                 raise Exception("Some error trimming unique company names list...")
     
-    # Create a lock object
+    # Create a lock object. API calls will be done using separate processes
     lock = multiprocessing.Lock()
 
     processes = []
@@ -140,10 +143,12 @@ async def unique_list_scrape():
         
     # Split company_list into three chunks
     chunks = split_into_chunks(company_listified, 3)
+    
+    # Progress bar
     pbar_position = 0
-    # Call the method for each chunk
+    
+    # Call the scrape function for each chunk, starting a separate process
     for chunk in chunks:
-        
         p = multiprocessing.Process(target=run_scrape, args=("unique", lock, chunk, pbar_position))
         processes.append(p)
         p.start()
@@ -192,7 +197,6 @@ async def scrape_charge_data():
     create_charge_data_output_files()
     
     while True:
-
         # Check if failed list exists, then attempt to scrape that
         if does_failed_list_exist("charge"):
             if prompt_user_to_continue("Failed list exists, do you want to attempt to scrape this data"):

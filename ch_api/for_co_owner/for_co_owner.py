@@ -2,7 +2,6 @@ from ch_api.utils.output_file import (
     create_foreign_co_owners_data_output_files,
     read_company_list_file,
     trim_company_list_file,
-    read_failed_company_list_file,
     does_failed_list_exist,
     does_finished_list_exist,
     fetch_missed_numbers_overseas_output

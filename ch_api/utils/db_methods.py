@@ -68,15 +68,16 @@ def _overseas_companies() -> Set[Tuple[int, int]]:
     print("Successfully fetched company records")
     
     return overseas_companies
-    
+
 def fetch_company_list_from_db(*args: str, update:bool=False) -> dict[str, Set[Tuple[int, int]]]:
     
-    # Template repsonse
+    # Template response 
     company_list = {
         "uk_companies": set(),
         "overseas_companies": set()
     }
     
+
     if "uk" in args:
         create_lock("collect_uk_unique_list")
         loc = "uk"
@@ -102,6 +103,7 @@ def __validate_unique_company_list_buffer_file() -> bool:
         # If the file has less then 1000 lines, then the function returns false
         return False
     
+# Compare company_list with existing unique company list, and add new companies if they don't appear
 def __save_company_list_to_unique_company_list(company_list, file_path, loc, update):
      
     if loc == "uk":
@@ -109,6 +111,8 @@ def __save_company_list_to_unique_company_list(company_list, file_path, loc, upd
     else:
         company_location = "overseas_companies"
     
+    # If update true, then we are rewriting over old file. 
+    # We create a new buffer file to write into first so the old unique list isn't overwritten
     if not update:
         try:
             # Write company identifier list to company list file
@@ -121,7 +125,6 @@ def __save_company_list_to_unique_company_list(company_list, file_path, loc, upd
             print(e)
             raise Exception("Some error saving companies list... ")  
     
-     # If update true, then we are rewriting over old file. We create a new buffer file to write first so the old unique list isn't overwritten
     elif update: 
         
         try:
@@ -134,7 +137,7 @@ def __save_company_list_to_unique_company_list(company_list, file_path, loc, upd
             if not __validate_unique_company_list_buffer_file():
                 raise Exception("Some error validating unique company buffer list")
             
-            # Now overwrite the file
+            # Now overwrite the existing unique company list file
             if loc == "uk":
                 shutil.move(config.UNIQUE_COMPANIES_LIST_BUFFER_PATH, config.UNIQUE_UK_COMPANIES_LIST_PATH)
             elif loc == "overseas":

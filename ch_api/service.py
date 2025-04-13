@@ -1,6 +1,6 @@
 # Starts service selected by user
 
-from lock.lock import create_lock, remove_lock
+from lock.lock import remove_lock
 from ch_api.charge_data.charge_data import scrape_charge_data
 from ch_api.for_co_owner.for_co_owner import  scrape_for_co_owner_data
 from ch_api.uk_co_owner.uk_co_owner import  scrape_uk_co_owner_data
@@ -13,11 +13,10 @@ from typing import Set, Tuple
 import os
 
 def does_uk_company_list_exist() -> dict[str, Set[Tuple[int, int]]]:
-    
     if os.path.exists(config.UNIQUE_UK_COMPANIES_LIST_PATH):
         with open(config.UNIQUE_UK_COMPANIES_LIST_PATH, "r", encoding="utf-8") as file:
             for i, line in enumerate(file):
-                if i >= 10:  # We want at least 10 lines, so if we reach n-1, we have enough
+                if i >= 10: 
                     return True
             return False
     else:
@@ -36,13 +35,12 @@ def does_overseas_company_list_exist() -> dict[str, Set[Tuple[int, int]]]:
     
 async def start_ch_service(arg: str) -> None: # Starts user service selected by user
     try:
-        # Create the lock before starting the program
         print("Program started. Running...")
         
-        # unique companies lists if none exists
+        # Create unique companies lists if none exists
         if not does_uk_company_list_exist():
             
-            # Get list of foreign companies from database
+            # Get list of uk companies from database
             try:
                 fetch_company_list_from_db("uk")  
                 print("Successfully fetched unique UK companies list")
@@ -68,7 +66,7 @@ async def start_ch_service(arg: str) -> None: # Starts user service selected by 
             if prompt_user_to_continue("Do you want to recollect unique foreign company list?"):
                 fetch_company_list_from_db("overseas", update=True) 
         
-        # Check if there are any datasets left to ingest
+        # Check if there are any API request results left to ingest into database
         output_files = do_output_files_exist()
         
         if len(output_files) > 0:

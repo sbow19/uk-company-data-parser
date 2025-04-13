@@ -103,7 +103,7 @@ def parse_overseas_records(filePath):
 
 def parse_uk_records(filePath):
     
-    batch_size = 500000
+    batch_size = 10000
     row_count = 0
     
     try:
@@ -138,7 +138,7 @@ def parse_uk_records(filePath):
             for _ in range(row_count): 
                 next(reader)
 
-            #Read throuhg csv file in batches
+            #Read through csv file in batches
             for row in reader:
 
                 row_count += 1
@@ -150,6 +150,7 @@ def parse_uk_records(filePath):
 
                 values.append(f'({sql_items})')
 
+                # Periodically commit insertions and log progress
                 if row_count % batch_size == 0:
                     newQuery = query + ', '.join(values) + ';'
                     cursor.execute(newQuery)

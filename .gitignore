@@ -1,12 +1,10 @@
 # RAW DATASETS
-datasets/
+datasets/**/*
+output/*
 
 # Ignore Python bytecode files
 *.pyc
 __pycache__/
-
-# Ignore configuration files (if you don't want them in version control)
-config/config.py
 
 # Ignore environment directories (if you're using virtual environments)
 venv/
@@ -36,6 +34,7 @@ env/
 *.class
 *.out
 
-# ignore all output files
+# ignore all output files*.txt
 *.txt
+!requirements.txt
 *.csv
