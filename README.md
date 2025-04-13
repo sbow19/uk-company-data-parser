@@ -42,13 +42,13 @@ use no more than three keys to maximise output.
 
 The CLI requires a .env file located at the root of the project with the following
 variables:
-    - MYSQL_HOST=""
-    - MYSQL_USER=""
-    - MYSQL_PASSWORD=""
-    - MYSQL_D=""
-    - CH_API_KEY=""
-    - CH_API_KEY_2=""
-    - CH_API_KEY_3=""
+- MYSQL_HOST=""
+- MYSQL_USER=""
+- MYSQL_PASSWORD=""
+- MYSQL_D=""
+- CH_API_KEY=""
+- CH_API_KEY_2=""
+- CH_API_KEY_3=""
 
 You must have at least one API key, but keys 2 and three may be left as an empty string.
 
