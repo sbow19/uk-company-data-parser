@@ -61,7 +61,7 @@ def parse_charge_owner_output(file_path):
 
     batch_size = 1000
     #Track number of rows added
-    row_count = 20750
+    row_count = 0
 
     try:
         create_table('hmlr', "ch_charge_data", file_path)

@@ -622,6 +622,7 @@ class Scrape_Data:
 
                 if response.status == 200:
                     return await response.json()
+                
                 else:
                     raise Exception(f"Could not fetch data - status code {response.status}")
     
